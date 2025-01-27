@@ -1,4 +1,5 @@
-const { fetchTopics } = require("../models/news.model");
+const { fetchTopics, selectArticleById } = require("../models/news.model");
+const convertTimestampToDate = require("../seeds/utils");
 const endpointsJson = require("..//../endpoints.json");
 
 function getJson(req, res, next) {
@@ -20,4 +21,15 @@ function getTopics(req, res, next) {
     });
 }
 
-module.exports = { getTopics, getJson };
+function getArticleById(req, res, next) {
+  const id = req.params.article_id;
+  selectArticleById(id)
+    .then((article) => {
+      res.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
+module.exports = { getTopics, getJson, getArticleById };

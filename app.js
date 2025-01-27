@@ -9,7 +9,7 @@ app.get("/api", getJson);
 
 app.get("/api/topics", getTopics);
 
-app.use((err, req, res, next) => {
+app.all("*", (req, res) => {
   res.status(404).send({ error: "Not Found" });
 });
 

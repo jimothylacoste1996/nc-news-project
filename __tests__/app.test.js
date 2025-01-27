@@ -32,7 +32,9 @@ describe("General Error Handling", () => {
     return request(app)
       .get("/api/incorrectendpoint")
       .expect(404)
-      .then((response) => {});
+      .then((response) => {
+        expect(response.body.error).toEqual("Not Found");
+      });
   });
 });
 

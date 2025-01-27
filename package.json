@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "setup-dbs": "psql -f ./db/setup.sql",
-    "seed": "node ./db/seeds/run-seed.js",
+    "seed": "PGDATABASE=nc_news node ./db/seeds/run-seed.js",
+    "seed-test": "PGDATABASE=nc_news_test node ./db/seeds/run-seed.js",
     "test": "jest",
     "prepare": "husky install"
   },
@@ -21,14 +22,16 @@
   },
   "homepage": "https://github.com/northcoders/be-nc-news#readme",
   "devDependencies": {
-    "husky": "^8.0.2",
+    "husky": "^8.0.3",
     "jest": "^27.5.1",
     "jest-extended": "^2.0.0",
-    "pg-format": "^1.0.4"
+    "pg-format": "^1.0.4",
+    "supertest": "^7.0.0"
   },
   "dependencies": {
-    "dotenv": "^16.0.0",
-    "pg": "^8.7.3"
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
   },
   "jest": {
     "setupFilesAfterEnv": [

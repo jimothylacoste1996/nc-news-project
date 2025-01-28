@@ -9,6 +9,7 @@ const {
   getCommentsById,
   postCommentById,
   patchArticleById,
+  deleteCommentById,
 } = require("./db/controllers/news.controller");
 
 app.use(express.json());
@@ -27,6 +28,8 @@ app.post("/api/articles/:article_id/comments", postCommentById);
 
 app.patch("/api/articles/:article_id", patchArticleById);
 
+app.delete("/api/comments/:comment_id", deleteCommentById);
+
 app.all("*", (req, res) => {
   res.status(404).send({ error: "Not Found" });
 });
@@ -42,7 +45,8 @@ app.use((err, req, res, next) => {
 app.use((err, req, res, next) => {
   if (
     err.message === "article not found" ||
-    err.message === "no comments found"
+    err.message === "no comments found" ||
+    err.message === "comment not found"
   ) {
     res.status(404).send({ error: "Not Found" });
   }

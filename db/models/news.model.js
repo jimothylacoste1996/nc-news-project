@@ -1,6 +1,6 @@
 const db = require("../connection");
 const articles = require("../data/test-data/articles");
-
+const checkCommentExists = require("../../checkCommentExists");
 function fetchTopics() {
   return db.query(`SELECT * FROM topics;`).then((response) => {
     return response.rows;
@@ -89,6 +89,12 @@ function updateArticleById(id, votes, currentVotes) {
     });
 }
 
+function removeCommentById(id) {
+  return checkCommentExists(id).then(() => {
+    return db.query(`DELETE FROM comments WHERE comment_id = $1`, [id]);
+  });
+}
+
 module.exports = {
   fetchTopics,
   selectArticleById,
@@ -97,4 +103,5 @@ module.exports = {
   insertCommentById,
   updateArticleById,
   getCurrentVotes,
+  removeCommentById,
 };

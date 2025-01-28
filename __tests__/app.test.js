@@ -264,3 +264,35 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 });
+describe("DELETE /api/comments/:comment_id", () => {
+  test("should respond with a 204 and no content", () => {
+    return request(app)
+      .delete("/api/comments/2")
+      .expect(204)
+      .then(() => {
+        return db.query(`SELECT * FROM comments;`).then((results) => {
+          const afterDeleteRows = results.rows;
+
+          afterDeleteRows.forEach((comment) => {
+            expect(comment.comment_id).not.toBe("2");
+          });
+        });
+      });
+  });
+  test("404 no comment with that id", () => {
+    return request(app)
+      .delete("/api/comments/999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.error).toBe("Not Found");
+      });
+  });
+  test("400 missing keys, malformed input", () => {
+    return request(app)
+      .delete("/api/comments/notanumber")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.error).toBe("Bad Request");
+      });
+  });
+});

@@ -7,6 +7,7 @@ const {
   updateArticleById,
   getCurrentVotes,
   removeCommentById,
+  fetchUsers,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
 
@@ -113,6 +114,16 @@ function deleteCommentById(req, res, next) {
     });
 }
 
+function getUsers(req, res, next) {
+  fetchUsers()
+    .then((users) => {
+      res.status(200).send({ users });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
 module.exports = {
   getTopics,
   getJson,
@@ -122,4 +133,5 @@ module.exports = {
   postCommentById,
   patchArticleById,
   deleteCommentById,
+  getUsers,
 };

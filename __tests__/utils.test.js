@@ -4,6 +4,8 @@ const {
   formatComments,
 } = require("../db/seeds/utils");
 
+const checkCommentExists = require("../checkCommentExists");
+
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
     const timestamp = 1557572706232;
@@ -100,5 +102,18 @@ describe("formatComments", () => {
     const comments = [{ created_at: timestamp }];
     const formattedComments = formatComments(comments, {});
     expect(formattedComments[0].created_at).toEqual(new Date(timestamp));
+  });
+});
+
+describe("checkCommentExists", () => {
+  test("should reject if the comment doesn't exist", () => {
+    return expect(checkCommentExists(999)).rejects.toMatchObject({
+      message: "comment not found",
+      status: 404,
+    });
+  });
+
+  test("should resolve if the comment exists", () => {
+    return expect(checkCommentExists(1)).resolves.toMatch("comment exists");
   });
 });

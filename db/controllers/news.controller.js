@@ -6,6 +6,7 @@ const {
   insertCommentById,
   updateArticleById,
   getCurrentVotes,
+  removeCommentById,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
 
@@ -100,6 +101,18 @@ function patchArticleById(req, res, next) {
     });
 }
 
+function deleteCommentById(req, res, next) {
+  const id = req.params.comment_id;
+
+  removeCommentById(id)
+    .then(() => {
+      res.status(204).send({});
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
 module.exports = {
   getTopics,
   getJson,
@@ -108,4 +121,5 @@ module.exports = {
   getCommentsById,
   postCommentById,
   patchArticleById,
+  deleteCommentById,
 };

@@ -2,6 +2,7 @@ const {
   fetchTopics,
   selectArticleById,
   fetchArticles,
+  selectCommentsById,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
 
@@ -44,4 +45,22 @@ function getArticles(req, res, next) {
     });
 }
 
-module.exports = { getTopics, getJson, getArticleById, getArticles };
+function getCommentsById(req, res, next) {
+  const id = req.params.article_id;
+
+  selectCommentsById(id)
+    .then((comments) => {
+      res.status(200).send({ comments });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
+module.exports = {
+  getTopics,
+  getJson,
+  getArticleById,
+  getArticles,
+  getCommentsById,
+};

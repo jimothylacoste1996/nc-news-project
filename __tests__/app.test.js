@@ -134,3 +134,51 @@ describe("GET /api/articles", () => {
       });
   });
 });
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: Responds with an array of comments for the given article", () => {
+    return request(app)
+      .get("/api/articles/3/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+
+        expect(comments.length).toBe(2);
+
+        comments.forEach((comment) => {
+          expect(comment).toHaveProperty("comment_id");
+          expect(comment).toHaveProperty("votes");
+          expect(comment).toHaveProperty("created_at");
+          expect(comment).toHaveProperty("author");
+          expect(comment).toHaveProperty("body");
+          expect(comment).toHaveProperty("article_id");
+        });
+      });
+  });
+  test("should reject if no comments found", () => {
+    return request(app)
+      .get("/api/articles/12/comments")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.error).toBe("Not Found");
+      });
+  });
+  test("400: id not a number", () => {
+    return request(app)
+      .get("/api/articles/notanumber/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.error).toBe("Bad Request");
+      });
+  });
+  test("array should be sorted by most recent first", () => {
+    return request(app)
+      .get("/api/articles/3/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+
+        expect(comments).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+});

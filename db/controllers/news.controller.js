@@ -40,8 +40,12 @@ function getArticleById(req, res, next) {
       next(err);
     });
 }
+
 function getArticles(req, res, next) {
-  fetchArticles()
+  const sort_by = req.query.sort_by;
+  const order = req.query.order;
+
+  fetchArticles(sort_by, order)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -70,7 +74,7 @@ function postCommentById(req, res, next) {
     typeof newComment.username !== "string" ||
     typeof newComment.body !== "string"
   ) {
-    res.status(400).send({ error: "Bad Request" });
+    res.status(400).send({ msg: "Bad Request" });
   }
   newComment.article_id = req.params.article_id;
 
@@ -88,7 +92,7 @@ function patchArticleById(req, res, next) {
   const id = req.params.article_id;
 
   if (typeof votes !== "number" || votes === undefined) {
-    res.status(400).send({ error: "Bad Request" });
+    res.status(400).send({ msg: "Bad Request" });
   }
 
   getCurrentVotes(id)

@@ -19,11 +19,29 @@ function selectArticleById(id) {
     });
 }
 
-function fetchArticles() {
+function fetchArticles(sort_by = "created_at", order = "desc") {
+  const sortByGreenList = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "body",
+    "created_at",
+    "votes",
+    "article_img_url",
+  ];
+  if (sort_by && !sortByGreenList.includes(sort_by)) {
+    return Promise.reject({ message: "invalid sort_by column" });
+  }
+
+  if (order && order !== "asc" && order !== "desc") {
+    return Promise.reject({ message: "invalid order" });
+  }
+
   let SQLString = `SELECT articles.article_id, articles.author, articles.title, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count FROM articles 
   LEFT JOIN comments ON articles.article_id = comments.article_id 
   GROUP BY 
-  articles.article_id ORDER BY created_at DESC`;
+  articles.article_id ORDER BY ${sort_by} ${order}`;
 
   return db.query(SQLString).then((response) => {
     if (!response.rows.length) {
@@ -53,6 +71,7 @@ function insertCommentById(newComment) {
   const { article_id, username, body } = newComment;
   const votes = 0;
   const date = new Date();
+
   return db
     .query(
       `INSERT INTO comments (article_id, author, body, votes, created_at)

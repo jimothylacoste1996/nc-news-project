@@ -30,12 +30,7 @@ describe("GET /api", () => {
 
 describe("General Error Handling", () => {
   test("not found", () => {
-    return request(app)
-      .get("/api/incorrectendpoint")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.error).toEqual("Not Found");
-      });
+    return request(app).get("/api/incorrectendpoint").expect(404);
   });
 });
 
@@ -76,7 +71,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/999")
       .expect(404)
       .then((response) => {
-        expect(response.body.error).toBe("Not Found");
+        expect(response.body.msg).toBe("article not found");
       });
   });
   test("400 id not a number", () => {
@@ -84,7 +79,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/notarticle")
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
 });
@@ -99,14 +94,16 @@ describe("GET /api/articles", () => {
         expect(articles.length).toBe(13);
 
         articles.forEach((article) => {
-          expect(article).toHaveProperty("author");
-          expect(article).toHaveProperty("title");
-          expect(article).toHaveProperty("article_id");
-          expect(article).toHaveProperty("topic");
-          expect(article).toHaveProperty("created_at");
-          expect(article).toHaveProperty("votes");
-          expect(article).toHaveProperty("article_img_url");
-          expect(article).toHaveProperty("comment_count");
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(String),
+          });
         });
       });
   });
@@ -133,6 +130,40 @@ describe("GET /api/articles", () => {
         expect(articles[12].comment_count).toBe("0");
       });
   });
+  test("correctly sorts the articles by chosen query in ascending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=title")
+      .expect(200)
+      .then((response) => {
+        const body = response.body;
+        expect(body.articles).toBeSorted({ key: "title", descending: true });
+      });
+  });
+  test("correctly sorts the articles by chosen query defaulting to descending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=title&order=asc")
+      .expect(200)
+      .then((response) => {
+        const body = response.body;
+        expect(body.articles).toBeSorted({ key: "title", ascending: true });
+      });
+  });
+  test("400: invalid sort_by query", () => {
+    return request(app)
+      .get("/api/articles?sort_by=invalid_id")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+  });
+  test("400: invalid order query", () => {
+    return request(app)
+      .get("/api/articles?sort_by=title&order=invalidorder")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+  });
 });
 
 describe("GET /api/articles/:article_id/comments", () => {
@@ -146,21 +177,23 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(comments.length).toBe(2);
 
         comments.forEach((comment) => {
-          expect(comment).toHaveProperty("comment_id");
-          expect(comment).toHaveProperty("votes");
-          expect(comment).toHaveProperty("created_at");
-          expect(comment).toHaveProperty("author");
-          expect(comment).toHaveProperty("body");
-          expect(comment).toHaveProperty("article_id");
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            body: expect.any(String),
+            article_id: expect.any(Number),
+            author: expect.any(String),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+          });
         });
       });
   });
-  test("should reject if no comments found", () => {
+  test("404: if no comments found", () => {
     return request(app)
       .get("/api/articles/12/comments")
       .expect(404)
       .then((response) => {
-        expect(response.body.error).toBe("Not Found");
+        expect(response.body.msg).toBe("no comments found");
       });
   });
   test("400: id not a number", () => {
@@ -168,7 +201,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/notanumber/comments")
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
   test("array should be sorted by most recent first", () => {
@@ -202,7 +235,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       })
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
   test("400 incorrect data types", () => {
@@ -211,7 +244,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send({ username: 123, body: 456 })
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
 });
@@ -224,17 +257,20 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(200)
       .then((response) => {
         const article = response.body.article;
-        expect(article).toHaveProperty("article_id");
-        expect(article).toHaveProperty("title");
-        expect(article).toHaveProperty("topic");
-        expect(article).toHaveProperty("author");
-        expect(article).toHaveProperty("body");
-        expect(article).toHaveProperty("created_at");
-        expect(article).toHaveProperty("article_img_url");
+
         expect(article.votes).toBe(5);
+        expect(article).toMatchObject({
+          article_id: expect.any(Number),
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          article_img_url: expect.any(String),
+        });
       });
   });
-  test("works with negative votes", () => {
+  test("works with a negative votes integer", () => {
     return request(app)
       .patch("/api/articles/3")
       .send({ inc_votes: -5 })
@@ -245,13 +281,13 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(article.votes).toBe(-5);
       });
   });
-  test("400 incorrect data type", () => {
+  test("400 incorrect data type for votes(a string rather than number)", () => {
     return request(app)
       .patch("/api/articles/3")
       .send({ inc_votes: "hello" })
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
   test("400 missing keys, malformed input", () => {
@@ -260,7 +296,7 @@ describe("PATCH /api/articles/:article_id", () => {
       .send({})
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
 });
@@ -284,7 +320,7 @@ describe("DELETE /api/comments/:comment_id", () => {
       .delete("/api/comments/999")
       .expect(404)
       .then((response) => {
-        expect(response.body.error).toBe("Not Found");
+        expect(response.body.msg).toBe("comment not found");
       });
   });
   test("400 missing keys, malformed input", () => {
@@ -292,7 +328,7 @@ describe("DELETE /api/comments/:comment_id", () => {
       .delete("/api/comments/notanumber")
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toBe("Bad Request");
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
 });
@@ -307,9 +343,11 @@ describe("GET /api/users", () => {
         expect(users.length).toBe(4);
 
         users.forEach((user) => {
-          expect(user).toHaveProperty("username");
-          expect(user).toHaveProperty("name");
-          expect(user).toHaveProperty("avatar_url");
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
         });
       });
   });

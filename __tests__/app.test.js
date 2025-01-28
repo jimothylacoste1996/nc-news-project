@@ -182,3 +182,36 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
+describe.only("POST /api/articles/:article_id/comments", () => {
+  test("should respond with the posted comment", () => {
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send({ username: "Jimothy", body: "Hello please work" })
+      .expect(201)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment.username).toBe("Jimothy");
+        expect(comment.body).toBe("Hello please work");
+      });
+  });
+  test("400 missing keys/malformed input", () => {
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send({
+        username: "testman",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.error).toBe("Bad Request");
+      });
+  });
+  test("400 incorrect data types", () => {
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send({ username: 123, body: 456 })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.error).toBe("Bad Request");
+      });
+  });
+});

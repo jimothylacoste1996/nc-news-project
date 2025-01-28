@@ -49,9 +49,26 @@ function selectCommentsById(id) {
     });
 }
 
+function insertCommentById(newComment) {
+  const { article_id, username, body } = newComment;
+  const votes = 0;
+  const date = new Date();
+  return db
+    .query(
+      `INSERT INTO comments (article_id, author, body, votes, created_at)
+    VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [article_id, username, body, votes, date]
+    )
+    .then((response) => {
+      return response.rows;
+    })
+    .catch((err) => {});
+}
+
 module.exports = {
   fetchTopics,
   selectArticleById,
   fetchArticles,
   selectCommentsById,
+  insertCommentById,
 };

@@ -3,6 +3,7 @@ const {
   selectArticleById,
   fetchArticles,
   selectCommentsById,
+  insertCommentById,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
 
@@ -57,10 +58,32 @@ function getCommentsById(req, res, next) {
     });
 }
 
+function postCommentById(req, res, next) {
+  const newComment = req.body;
+  if (
+    newComment.username === undefined ||
+    newComment.body === undefined ||
+    typeof newComment.username !== "string" ||
+    typeof newComment.body !== "string"
+  ) {
+    res.status(400).send({ error: "Bad Request" });
+  }
+  newComment.article_id = req.params.article_id;
+
+  insertCommentById(newComment)
+    .then(() => {
+      res.status(201).send({ comment: newComment });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
 module.exports = {
   getTopics,
   getJson,
   getArticleById,
   getArticles,
   getCommentsById,
+  postCommentById,
 };

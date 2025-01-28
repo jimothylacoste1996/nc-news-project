@@ -8,6 +8,7 @@ const {
   getArticles,
   getCommentsById,
   postCommentById,
+  patchArticleById,
 } = require("./db/controllers/news.controller");
 
 app.use(express.json());
@@ -23,6 +24,8 @@ app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles/:article_id/comments", getCommentsById);
 
 app.post("/api/articles/:article_id/comments", postCommentById);
+
+app.patch("/api/articles/:article_id", patchArticleById);
 
 app.all("*", (req, res) => {
   res.status(404).send({ error: "Not Found" });

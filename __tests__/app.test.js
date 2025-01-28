@@ -215,3 +215,52 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("should respond with the updated article", () => {
+    return request(app)
+      .patch("/api/articles/3")
+      .send({ inc_votes: 5 })
+      .expect(200)
+      .then((response) => {
+        const article = response.body.article;
+        expect(article).toHaveProperty("article_id");
+        expect(article).toHaveProperty("title");
+        expect(article).toHaveProperty("topic");
+        expect(article).toHaveProperty("author");
+        expect(article).toHaveProperty("body");
+        expect(article).toHaveProperty("created_at");
+        expect(article).toHaveProperty("article_img_url");
+        expect(article.votes).toBe(5);
+      });
+  });
+  test("works with negative votes", () => {
+    return request(app)
+      .patch("/api/articles/3")
+      .send({ inc_votes: -5 })
+      .expect(200)
+      .then((response) => {
+        const article = response.body.article;
+
+        expect(article.votes).toBe(-5);
+      });
+  });
+  test("400 incorrect data type", () => {
+    return request(app)
+      .patch("/api/articles/3")
+      .send({ inc_votes: "hello" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.error).toBe("Bad Request");
+      });
+  });
+  test("400 missing keys, malformed input", () => {
+    return request(app)
+      .patch("/api/articles/3")
+      .send({})
+      .expect(400)
+      .then((response) => {
+        expect(response.body.error).toBe("Bad Request");
+      });
+  });
+});

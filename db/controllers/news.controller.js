@@ -4,6 +4,8 @@ const {
   fetchArticles,
   selectCommentsById,
   insertCommentById,
+  updateArticleById,
+  getCurrentVotes,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
 
@@ -79,6 +81,25 @@ function postCommentById(req, res, next) {
     });
 }
 
+function patchArticleById(req, res, next) {
+  const votes = req.body.inc_votes;
+  const id = req.params.article_id;
+
+  if (typeof votes !== "number" || votes === undefined) {
+    res.status(400).send({ error: "Bad Request" });
+  }
+
+  getCurrentVotes(id)
+    .then((currentVotes) => {
+      return updateArticleById(id, votes, currentVotes).then((article) => {
+        res.status(200).send({ article });
+      });
+    })
+    .catch((err) => {
+      next(err);
+    });
+}
+
 module.exports = {
   getTopics,
   getJson,
@@ -86,4 +107,5 @@ module.exports = {
   getArticles,
   getCommentsById,
   postCommentById,
+  patchArticleById,
 };

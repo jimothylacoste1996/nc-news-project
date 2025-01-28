@@ -65,10 +65,36 @@ function insertCommentById(newComment) {
     .catch((err) => {});
 }
 
+function getCurrentVotes(id) {
+  return db
+    .query(`SELECT votes FROM articles WHERE article_id = $1`, [id])
+    .then((response) => {
+      return response.rows[0].votes;
+    });
+}
+
+function updateArticleById(id, votes, currentVotes) {
+  const newVotes = currentVotes + votes;
+
+  return db
+    .query(`UPDATE articles SET votes = $1 WHERE article_id = $2`, [
+      newVotes,
+      id,
+    ])
+    .then(() => {
+      return db.query(`SELECT * FROM articles WHERE article_id = $1`, [id]);
+    })
+    .then((response) => {
+      return response.rows[0];
+    });
+}
+
 module.exports = {
   fetchTopics,
   selectArticleById,
   fetchArticles,
   selectCommentsById,
   insertCommentById,
+  updateArticleById,
+  getCurrentVotes,
 };

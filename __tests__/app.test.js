@@ -182,7 +182,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
   });
 });
-describe.only("POST /api/articles/:article_id/comments", () => {
+describe("POST /api/articles/:article_id/comments", () => {
   test("should respond with the posted comment", () => {
     return request(app)
       .post("/api/articles/3/comments")

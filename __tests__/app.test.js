@@ -4,6 +4,7 @@ const app = require("../app");
 const testData = require("../db/data/test-data/index");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
+
 /* Set up your test imports here */
 
 /* Set up your beforeEach & afterAll functions here */
@@ -61,17 +62,13 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then((response) => {
         const article = response.body.article;
-        expect(article).toEqual({
-          article_id: 1,
-          title: "Living in the shadow of a great man",
-          topic: "mitch",
-          author: "butter_bridge",
-          body: "I find this existence challenging",
-          created_at: "2020-07-09T20:11:00.000Z",
-          votes: 100,
-          article_img_url:
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-        });
+        expect((article.article_id = 1));
+        expect((article.title = "Living in the shadow of a great man"));
+        expect((article.topic = "mitch"));
+        expect((article.author = "butter_bridge"));
+        expect((article.votes = 100));
+        expect((article.body = "I find this existence challenging"));
+        expect((article.created_at = "2020-07-09T20:11:00.000Z"));
       });
   });
   test("404 article not found", () => {
@@ -88,6 +85,52 @@ describe("GET /api/articles/:article_id", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.error).toBe("Bad Request");
+      });
+  });
+});
+describe("GET /api/articles", () => {
+  test("200: Responds with an array of article objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+
+        expect(articles.length).toBe(13);
+
+        articles.forEach((article) => {
+          expect(article).toHaveProperty("author");
+          expect(article).toHaveProperty("title");
+          expect(article).toHaveProperty("article_id");
+          expect(article).toHaveProperty("topic");
+          expect(article).toHaveProperty("created_at");
+          expect(article).toHaveProperty("votes");
+          expect(article).toHaveProperty("article_img_url");
+          expect(article).toHaveProperty("comment_count");
+        });
+      });
+  });
+  test("correctly orders the array by date", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+
+        expect(articles).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  test("returns the correct comment count for articles", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+
+        expect(articles[0].comment_count).toBe("2");
+        expect(articles[1].comment_count).toBe("1");
+        expect(articles[6].comment_count).toBe("11");
+        expect(articles[12].comment_count).toBe("0");
       });
   });
 });

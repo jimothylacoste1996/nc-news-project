@@ -34,4 +34,24 @@ function fetchArticles() {
   });
 }
 
-module.exports = { fetchTopics, selectArticleById, fetchArticles };
+function selectCommentsById(id) {
+  return db
+    .query(
+      `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`,
+      [id]
+    )
+    .then((response) => {
+      if (!response.rows.length) {
+        return Promise.reject({ message: "no comments found" });
+      } else {
+        return response.rows;
+      }
+    });
+}
+
+module.exports = {
+  fetchTopics,
+  selectArticleById,
+  fetchArticles,
+  selectCommentsById,
+};

@@ -292,6 +292,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .expect(201)
       .then((response) => {
         const comment = response.body.comment;
+
         expect(comment.username).toBe("Jimothy");
         expect(comment.body).toBe("Hello please work");
       });

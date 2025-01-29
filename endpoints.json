@@ -67,6 +67,15 @@
       "article_img_url": "www.exampleurl.com"
     }
   },
+  "POST /api/articles/:article_id/comments": {
+    "description": "adds a comment for an article",
+    "queries": [],
+    "exampleResponse": {
+      "username": "Jimothy",
+      "body": "Hello please work",
+      "article_id": "3"
+    }
+  },
 
   "DELETE /api/comments/:comment_id": {
     "description": "deletes a specific comment by comment_id",

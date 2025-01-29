@@ -54,7 +54,8 @@ app.use((err, req, res, next) => {
   if (
     err.message === "article not found" ||
     err.message === "no comments found" ||
-    err.message === "comment not found"
+    err.message === "comment not found" ||
+    err.message === "topic not found"
   ) {
     res.status(404).send({ msg: err.message });
   }

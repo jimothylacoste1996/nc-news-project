@@ -1,6 +1,7 @@
 const db = require("../connection");
 const articles = require("../data/test-data/articles");
 const checkCommentExists = require("../../checkCommentExists");
+const checkTopicExists = require("../../checkTopicExists");
 function fetchTopics() {
   return db.query(`SELECT * FROM topics;`).then((response) => {
     return response.rows;
@@ -19,7 +20,7 @@ function selectArticleById(id) {
     });
 }
 
-function fetchArticles(sort_by = "created_at", order = "desc") {
+function fetchArticles(sort_by = "created_at", order = "desc", topic = null) {
   const sortByGreenList = [
     "article_id",
     "title",
@@ -30,6 +31,12 @@ function fetchArticles(sort_by = "created_at", order = "desc") {
     "votes",
     "article_img_url",
   ];
+
+  let SQLString = `SELECT articles.article_id, articles.author, articles.title, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count FROM articles 
+  LEFT JOIN comments ON articles.article_id = comments.article_id 
+  GROUP BY 
+  articles.article_id ORDER BY ${sort_by} ${order}`;
+
   if (sort_by && !sortByGreenList.includes(sort_by)) {
     return Promise.reject({ message: "invalid sort_by column" });
   }
@@ -38,10 +45,18 @@ function fetchArticles(sort_by = "created_at", order = "desc") {
     return Promise.reject({ message: "invalid order" });
   }
 
-  let SQLString = `SELECT articles.article_id, articles.author, articles.title, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count FROM articles 
-  LEFT JOIN comments ON articles.article_id = comments.article_id 
+  if (topic) {
+    return checkTopicExists(topic)
+      .then(() => {
+        return db.query(`SELECT articles.article_id, articles.author, articles.title, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id) AS comment_count FROM articles 
+  LEFT JOIN comments ON articles.article_id = comments.article_id WHERE articles.topic = '${topic}'
   GROUP BY 
-  articles.article_id ORDER BY ${sort_by} ${order}`;
+  articles.article_id ORDER BY created_at desc`);
+      })
+      .then((response) => {
+        return response.rows;
+      });
+  }
 
   return db.query(SQLString).then((response) => {
     if (!response.rows.length) {

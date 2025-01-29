@@ -164,6 +164,59 @@ describe("GET /api/articles", () => {
         expect(response.body.msg).toBe("Bad Request");
       });
   });
+  test("correctly filters the articles by the topic value specified in the query", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(String),
+          });
+        });
+      });
+  });
+  test("404: no articles of that topic", () => {
+    return request(app)
+      .get("/api/articles?topic=unpopulartopic")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("topic not found");
+      });
+  });
+  test("Returns all articles if query omitted", () => {
+    return request(app)
+      .get("/api/articles?topic=")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+
+        expect(articles.length).toBe(13);
+
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(String),
+          });
+        });
+      });
+  });
 });
 
 describe("GET /api/articles/:article_id/comments", () => {

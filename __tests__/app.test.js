@@ -66,6 +66,23 @@ describe("GET /api/articles/:article_id", () => {
         expect((article.created_at = "2020-07-09T20:11:00.000Z"));
       });
   });
+  test("200: Responds with the correct article with the correct comment count", () => {
+    return request(app)
+      .get("/api/articles/3")
+      .expect(200)
+      .then((response) => {
+        const article = response.body.article;
+        expect((article.comment_count = "2"));
+        expect((article.article_id = 3));
+        expect((article.title = "Eight pug gifs that remind me of mitch"));
+        expect((article.topic = "mitch"));
+        expect((article.author = "icellusedkars"));
+        expect((article.votes = 0));
+        expect((article.body = "some gifs"));
+        expect((article.created_at = "2020-11-03T09:12:00.000Z"));
+      });
+  });
+
   test("404 article not found", () => {
     return request(app)
       .get("/api/articles/999")
@@ -123,7 +140,6 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const articles = response.body.articles;
-
         expect(articles[0].comment_count).toBe("2");
         expect(articles[1].comment_count).toBe("1");
         expect(articles[6].comment_count).toBe("11");

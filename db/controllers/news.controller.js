@@ -9,8 +9,11 @@ const {
   removeCommentById,
   fetchUsers,
   selectUserByUsername,
+  updateCommentById,
+  getCurrentCommentVotes,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
+const { checkCommentExists } = require("../../utils/utils");
 
 function getJson(req, res, next) {
   res
@@ -138,7 +141,21 @@ function getUserByUsername(req, res, next) {
       res.status(200).send({ user: user });
     })
     .catch((err) => {
-      console.log("in err");
+      next(err);
+    });
+}
+
+function patchCommentById(req, res, next) {
+  const id = req.params.comment_id;
+  const votes = req.body.inc_votes;
+
+  getCurrentCommentVotes(id)
+    .then((currentVotes) => {
+      return updateCommentById(id, votes, currentVotes).then((comment) => {
+        res.status(200).send({ comment });
+      });
+    })
+    .catch((err) => {
       next(err);
     });
 }
@@ -154,4 +171,5 @@ module.exports = {
   deleteCommentById,
   getUsers,
   getUserByUsername,
+  patchCommentById,
 };

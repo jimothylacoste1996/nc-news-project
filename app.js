@@ -36,6 +36,7 @@ app.use((err, req, res, next) => {
     "no comments found",
     "comment not found",
     "topic not found",
+    "user not found",
   ];
   if (errMsgs.includes(err.message)) {
     res.status(404).send({ msg: err.message });

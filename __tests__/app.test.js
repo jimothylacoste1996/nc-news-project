@@ -422,3 +422,40 @@ describe("GET /api/users", () => {
       });
   });
 });
+
+describe("GET /api/users/:username", () => {
+  test("should respond with a user object", () => {
+    return request(app)
+      .get("/api/users/icellusedkars")
+      .expect(200)
+      .then((response) => {
+        const user = response.body.user;
+        expect(user).toMatchObject({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        });
+      });
+  });
+  test("should respond with the correct user object", () => {
+    return request(app)
+      .get("/api/users/icellusedkars")
+      .expect(200)
+      .then((response) => {
+        const user = response.body.user;
+        expect(user.username).toBe("icellusedkars");
+        expect(user.name).toBe("sam");
+        expect(user.avatar_url).toBe(
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4"
+        );
+      });
+  });
+  test("404 user not found", () => {
+    return request(app)
+      .get("/api/users/notauser")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("user not found");
+      });
+  });
+});

@@ -141,6 +141,18 @@ function fetchUsers() {
   });
 }
 
+function selectUserByUsername(username) {
+  return db
+    .query(`SELECT * FROM users WHERE username = $1`, [username])
+    .then((response) => {
+      if (!response.rows.length) {
+        return Promise.reject({ message: "user not found" });
+      } else {
+        return response.rows[0];
+      }
+    });
+}
+
 module.exports = {
   fetchTopics,
   selectArticleById,
@@ -151,4 +163,5 @@ module.exports = {
   getCurrentVotes,
   removeCommentById,
   fetchUsers,
+  selectUserByUsername,
 };

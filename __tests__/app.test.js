@@ -459,3 +459,78 @@ describe("GET /api/users/:username", () => {
       });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("should respond with the updated comment", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 4 })
+      .expect(200)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: expect.any(String),
+          article_id: expect.any(Number),
+          author: expect.any(String),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+  test("should respond with the correctly updated comment", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 4 })
+      .expect(200)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment.comment_id).toBe(1);
+        expect(comment.body).toBe(
+          "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!"
+        );
+        expect(comment.article_id).toBe(9);
+        expect(comment.author).toBe("butter_bridge");
+        expect(comment.votes).toBe(20);
+        expect(comment.created_at).toBe("2020-04-06T12:17:00.000Z");
+      });
+  });
+  test("works with a negative integer for votes", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: -4 })
+      .expect(200)
+      .then((response) => {
+        const comment = response.body.comment;
+
+        expect(comment.votes).toBe(12);
+      });
+  });
+  test("400 incorrect data type for votes(a string rather than number)", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: "hello" })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+  });
+  test("400 missing keys, malformed input", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({})
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+  });
+  test.skip("404 comment not found", () => {
+    return request(app)
+      .patch("/api/comments/555")
+      .send({ inc_votes: 5 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Not Found");
+      });
+  });
+});

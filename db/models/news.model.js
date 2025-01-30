@@ -1,7 +1,8 @@
 const db = require("../connection");
 const articles = require("../data/test-data/articles");
-const checkCommentExists = require("../../checkCommentExists");
-const checkTopicExists = require("../../checkTopicExists");
+
+const { checkCommentExists, checkTopicExists } = require("../../utils/utils");
+
 function fetchTopics() {
   return db.query(`SELECT * FROM topics;`).then((response) => {
     return response.rows;
@@ -113,6 +114,14 @@ function getCurrentVotes(id) {
     });
 }
 
+function getCurrentCommentVotes(id) {
+  return db
+    .query(`SELECT votes FROM comments WHERE comment_id = $1`, [id])
+    .then((response) => {
+      return response.rows[0].votes;
+    });
+}
+
 function updateArticleById(id, votes, currentVotes) {
   const newVotes = currentVotes + votes;
 
@@ -153,6 +162,22 @@ function selectUserByUsername(username) {
     });
 }
 
+function updateCommentById(id, votes, currentVotes) {
+  const newVotes = currentVotes + votes;
+
+  return db
+    .query(`UPDATE comments SET votes = $1 WHERE comment_id = $2`, [
+      newVotes,
+      id,
+    ])
+    .then(() => {
+      return db.query(`SELECT * FROM comments WHERE comment_id = $1`, [id]);
+    })
+    .then((response) => {
+      return response.rows[0];
+    });
+}
+
 module.exports = {
   fetchTopics,
   selectArticleById,
@@ -164,4 +189,6 @@ module.exports = {
   removeCommentById,
   fetchUsers,
   selectUserByUsername,
+  updateCommentById,
+  getCurrentCommentVotes,
 };

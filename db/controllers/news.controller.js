@@ -8,6 +8,7 @@ const {
   getCurrentVotes,
   removeCommentById,
   fetchUsers,
+  selectUserByUsername,
 } = require("../models/news.model");
 const endpointsJson = require("..//../endpoints.json");
 
@@ -129,7 +130,18 @@ function getUsers(req, res, next) {
     });
 }
 
-("HELLO");
+function getUserByUsername(req, res, next) {
+  const username = req.params.username;
+
+  selectUserByUsername(username)
+    .then((user) => {
+      res.status(200).send({ user: user });
+    })
+    .catch((err) => {
+      console.log("in err");
+      next(err);
+    });
+}
 
 module.exports = {
   getTopics,
@@ -141,4 +153,5 @@ module.exports = {
   patchArticleById,
   deleteCommentById,
   getUsers,
+  getUserByUsername,
 };

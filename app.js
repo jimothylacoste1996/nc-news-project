@@ -20,9 +20,11 @@ app.use((err, req, res, next) => {
   const errCodes = [
     "22P02",
     "23502",
+    "23503",
     "invalid sort_by column",
     "invalid order",
   ];
+
   if (errCodes.includes(err.code) || errCodes.includes(err.message)) {
     res.status(400).send({ msg: "Bad Request" });
   } else {
@@ -38,6 +40,7 @@ app.use((err, req, res, next) => {
     "topic not found",
     "user not found",
   ];
+
   if (errMsgs.includes(err.message)) {
     res.status(404).send({ msg: err.message });
   } else {
@@ -46,11 +49,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  if (err.status) {
-    res.status(err.status).send({ msg: err.message });
-  } else {
-    res.status(500).send({ msg: "Internal Server Error" });
-  }
+  res.status(500).send({ msg: "Internal Server Error" });
 });
 
 module.exports = app;

@@ -288,12 +288,12 @@ describe("POST /api/articles/:article_id/comments", () => {
   test("should respond with the posted comment", () => {
     return request(app)
       .post("/api/articles/3/comments")
-      .send({ username: "Jimothy", body: "Hello please work" })
+      .send({ username: "butter_bridge", body: "Hello please work" })
       .expect(201)
       .then((response) => {
         const comment = response.body.comment;
 
-        expect(comment.username).toBe("Jimothy");
+        expect(comment.username).toBe("butter_bridge");
         expect(comment.body).toBe("Hello please work");
       });
   });
@@ -367,6 +367,15 @@ describe("PATCH /api/articles/:article_id", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad Request");
+      });
+  });
+  test("404 article doesn't exist", () => {
+    return request(app)
+      .patch("/api/articles/55555")
+      .send({ inc_votes: 6 })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("article not found");
       });
   });
 });
@@ -524,13 +533,69 @@ describe("PATCH /api/comments/:comment_id", () => {
         expect(response.body.msg).toBe("Bad Request");
       });
   });
-  test.skip("404 comment not found", () => {
+  test("404 comment doesn't exist", () => {
     return request(app)
-      .patch("/api/comments/555")
-      .send({ inc_votes: 5 })
+      .patch("/api/comments/55555")
+      .send({ inc_votes: 6 })
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Not Found");
+        expect(response.body.msg).toBe("comment not found");
+      });
+  });
+});
+
+describe("POST /api/articles", () => {
+  test("should respond with the posted comment", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        author: "butter_bridge",
+        body: "example body",
+        title: "example title",
+        topic: "mitch",
+        article_img_url: "www.exampleurl.com",
+      })
+      .expect(201)
+      .then((response) => {
+        const article = response.body.article;
+
+        expect(article.article_id).toBe(14);
+        expect(article.title).toBe("example title");
+        expect(article.topic).toBe("mitch");
+        expect(article.author).toBe("butter_bridge");
+        expect(article.votes).toBe(0);
+        expect(article.body).toBe("example body");
+        expect(article.votes).toBe(0);
+        expect(typeof article.created_at).toBe("string");
+      });
+  });
+  test("400 missing keys/malformed input", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        author: "butter_bridge",
+        body: "example body",
+
+        article_img_url: "www.exampleurl.com",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+  });
+  test("400 incorrect data types", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        author: "butter_bridge",
+        body: "example body",
+        title: "example title",
+        topic: 123,
+        article_img_url: "www.exampleurl.com",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
       });
   });
 });

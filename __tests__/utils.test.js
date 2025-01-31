@@ -4,7 +4,7 @@ const {
   formatComments,
 } = require("../db/seeds/utils");
 
-const checkCommentExists = require("../checkCommentExists");
+const { checkCommentExists } = require("../utils/utils");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {

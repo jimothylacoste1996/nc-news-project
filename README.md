@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    <b>This is a backend project building an API to access application data programmatically. It uses a PostgreSQL database and is interacted with using node-postgres.</b>
+    <b>This is a backend project building an API to access application data programmatically. It uses a PostgreSQL database and is interacted with using node-postgres. The intention here was to mimic the building of a real world backend service (such as Reddit) which should provide this information to the front end architecture.</b>
 </p>
 
 <h3>Minimum requirements</h3>
@@ -70,7 +70,9 @@ Here you can list the main routes of your API, and what are their expected reque
 <kbd>GET /api/articles:article_id</kbd> | serves a specific article by article_id property, also includes amount of comments
 | <kbd>GET /api/articles:article_id/comments</kbd> | serves an array of all comments for an article
 | <kbd>PATCH /api/articles/:article_id</kbd> | updates the votes for an article
+<kbd>PATCH /api/comments/:comment_id</kbd> | updates the votes for a comment
 <kbd>POST /api/articles/:article_id/comments</kbd> | adds a comment for an article
+<kbd>POST /api/articles</kbd> | posts a new article
 | <kbd>DELETE /api/comments/:comment_id</kbd> | deletes a specific comment by comment_id
 |
 

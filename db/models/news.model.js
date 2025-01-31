@@ -2,6 +2,7 @@ const db = require("../connection");
 const articles = require("../data/test-data/articles");
 
 const { checkCommentExists, checkTopicExists } = require("../../utils/utils");
+const { errorMonitor } = require("supertest/lib/test");
 
 function fetchTopics() {
   return db.query(`SELECT * FROM topics;`).then((response) => {
@@ -103,22 +104,46 @@ function insertCommentById(newComment) {
     .then((response) => {
       return response.rows;
     })
-    .catch((err) => {});
+    .catch((err) => {
+      throw err;
+    });
 }
 
 function getCurrentVotes(id) {
   return db
-    .query(`SELECT votes FROM articles WHERE article_id = $1`, [id])
-    .then((response) => {
-      return response.rows[0].votes;
+    .query(`SELECT * FROM articles WHERE article_id = $1`, [id])
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          message: "article not found",
+        });
+      } else {
+        return db
+          .query(`SELECT votes FROM articles WHERE article_id = $1`, [id])
+          .then((response) => {
+            return response.rows[0].votes;
+          });
+      }
     });
 }
 
 function getCurrentCommentVotes(id) {
   return db
-    .query(`SELECT votes FROM comments WHERE comment_id = $1`, [id])
-    .then((response) => {
-      return response.rows[0].votes;
+    .query(`SELECT * FROM comments WHERE comment_id = $1`, [id])
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          message: "comment not found",
+        });
+      } else {
+        return db
+          .query(`SELECT votes FROM comments WHERE comment_id = $1`, [id])
+          .then((response) => {
+            return response.rows[0].votes;
+          });
+      }
     });
 }
 
@@ -166,15 +191,60 @@ function updateCommentById(id, votes, currentVotes) {
   const newVotes = currentVotes + votes;
 
   return db
-    .query(`UPDATE comments SET votes = $1 WHERE comment_id = $2`, [
-      newVotes,
-      id,
-    ])
+    .query(`SELECT * FROM comments WHERE comment_id = $1`, [id])
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          message: "comment not found",
+        });
+      } else {
+        return db
+          .query(`UPDATE comments SET votes = $1 WHERE comment_id = $2`, [
+            newVotes,
+            id,
+          ])
+          .then(() => {
+            return db.query(`SELECT * FROM comments WHERE comment_id = $1`, [
+              id,
+            ]);
+          })
+          .then((response) => {
+            return response.rows[0];
+          })
+          .catch((err) => {
+            throw err;
+          });
+      }
+    });
+}
+
+function insertArticle({ author, title, body, topic, article_img_url }) {
+  const votes = 0;
+  const date = new Date();
+  const comment_count = 0;
+
+  return db
+    .query(
+      `INSERT INTO articles (author, title, body, topic, article_img_url,votes,created_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [author, title, body, topic, article_img_url, votes, date]
+    )
     .then(() => {
-      return db.query(`SELECT * FROM comments WHERE comment_id = $1`, [id]);
+      return db
+        .query(
+          `SELECT articles.article_id, articles.author, articles.title, articles.topic, articles.created_at, articles.votes, articles.article_img_url, articles.body, COUNT(comments.article_id) AS comment_count FROM articles 
+  LEFT JOIN comments ON articles.article_id = comments.article_id WHERE articles.created_at = $1
+  GROUP BY 
+  articles.article_id`,
+          [date]
+        )
+        .then((result) => {
+          return result.rows[0];
+        });
     })
-    .then((response) => {
-      return response.rows[0];
+    .catch((err) => {
+      throw err;
     });
 }
 
@@ -191,4 +261,5 @@ module.exports = {
   selectUserByUsername,
   updateCommentById,
   getCurrentCommentVotes,
+  insertArticle,
 };

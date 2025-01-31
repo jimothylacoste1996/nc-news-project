@@ -1,8 +1,6 @@
 const db = require("../connection");
-const articles = require("../data/test-data/articles");
 
 const { checkCommentExists, checkTopicExists } = require("../../utils/utils");
-const { errorMonitor } = require("supertest/lib/test");
 
 function fetchTopics() {
   return db.query(`SELECT * FROM topics;`).then((response) => {
